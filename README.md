@@ -1,5 +1,5 @@
 # CSS多边形编辑器
-
+# 引用大佬模版进行魔改-多了圆弧-直接生成的svg去掉了css（svg适配效果高于path，因为弧形需要贝塞尔曲线）
 <div align="center">
 
 ![GitHub stars](https://img.shields.io/github/stars/crper/next-css-polygon-editor?style=flat-square)
@@ -15,7 +15,7 @@
 </div>
 
 <p align="center">一款直观的CSS clip-path多边形编辑工具，帮助您轻松创建和编辑复杂的多边形形状。</p>
-# 引用大佬模版进行魔改-多了圆弧-直接生成的svg去掉了css（svg适配效果高于path，因为弧形需要贝塞尔曲线）
+
 ## 🎯 功能特色
 
 ### 基础功能
