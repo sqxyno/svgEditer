@@ -1,7 +1,7 @@
 'use client';
 
-import { Point } from '@/hooks/usePolygon';
 import { generateRoundedPath } from '@/components/polygon-editor/utils/roundedPath';
+import { Point } from '@/hooks/usePolygon';
 import { Check, Copy } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -11,7 +11,6 @@ import toast from 'react-hot-toast';
  */
 export interface CodeToolbarProps {
   points: Point[];
-  gradient?: string;
   previewSize: {
     width: number;
     height: number;
@@ -21,10 +20,12 @@ export interface CodeToolbarProps {
 /**
  * 代码工具栏组件
  */
-export function CodeToolbar({ points, gradient = '', previewSize }: CodeToolbarProps) {
+export function CodeToolbar({ points, previewSize }: CodeToolbarProps) {
   const [copied, setCopied] = useState(false);
   const hasRadius = points.some(p => (p.radius || 0) > 0);
-  const roundedPath = hasRadius ? generateRoundedPath(points, previewSize.width, previewSize.height) : null;
+  const roundedPath = hasRadius
+    ? generateRoundedPath(points, previewSize.width, previewSize.height)
+    : null;
 
   const generateSvgCode = useCallback(() => {
     const svgWidth = previewSize.width;
@@ -32,49 +33,32 @@ export function CodeToolbar({ points, gradient = '', previewSize }: CodeToolbarP
     // SVG中不需要百分比，直接使用数字即可
     const polygonPoints = points.map(p => `${p.x},${p.y}`).join(' ');
 
-    let code = `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <defs>`;
+    // 默认渐变颜色
+    const colors = ['#6366f1', '#8b5cf6', '#d946ef'];
 
-    if (gradient) {
-      // 解析渐变字符串
-      let colors = ['#6366f1', '#8b5cf6', '#d946ef'];
-
-      if (gradient.includes('linear-gradient')) {
-        // 处理完整的 linear-gradient 字符串
-        const match = gradient.match(/linear-gradient\([^,]*,\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/);
-        if (match && match.length >= 4) {
-          colors = [match[1].trim(), match[2].trim(), match[3].trim()];
-        }
-      } else if (gradient.includes(',')) {
-        // 处理纯色值列表
-        colors = gradient.split(',').map(c => c.trim());
-        // 确保至少有三种颜色
-        while (colors.length < 3) {
-          colors.push(colors[colors.length - 1] || '#d946ef');
-        }
-      }
-
-      code += `
+    const code = `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="${colors[0]}" />
       <stop offset="50%" stop-color="${colors[1]}" />
       <stop offset="100%" stop-color="${colors[2]}" />
-    </linearGradient>`;
-    }
-
-    code += `
+    </linearGradient>
   </defs>
-  ${roundedPath ? `<path d="${roundedPath.svgPath}"
-           fill="${gradient ? 'url(#gradient)' : '#6366f1'}"
+  ${
+    roundedPath
+      ? `<path d="${roundedPath.svgPath}"
+           fill="url(#gradient)"
            stroke="#3b82f6"
-           stroke-width="0.5" />` : `<polygon points="${polygonPoints}"
-           fill="${gradient ? 'url(#gradient)' : '#6366f1'}"
+           stroke-width="0.5" />`
+      : `<polygon points="${polygonPoints}"
+           fill="url(#gradient)"
            stroke="#3b82f6"
-           stroke-width="0.5" />`}
+           stroke-width="0.5" />`
+  }
 </svg>`;
 
     return code;
-  }, [points, gradient, previewSize, roundedPath]);
+  }, [points, previewSize, roundedPath]);
 
   // 复制代码到剪贴板
   const copyToClipboard = useCallback((code: string) => {

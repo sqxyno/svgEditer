@@ -1,7 +1,8 @@
 'use client';
 
-import { Point } from '@/hooks/usePolygon';
 import { generateRoundedPath } from '@/components/polygon-editor/utils/roundedPath';
+import { Point } from '@/hooks/usePolygon';
+import { useId } from 'react';
 
 /**
  * 多边形预览组件属性
@@ -9,10 +10,10 @@ import { generateRoundedPath } from '@/components/polygon-editor/utils/roundedPa
 export interface PolygonPreviewProps {
   clipPath: string;
   points: Point[]; // 添加points参数
-  backgroundImage?: string;
   width: number;
   height: number;
-  gradient?: string;
+  fillColor?: string; // 填充颜色或渐变
+  fillType?: 'solid' | 'gradient'; // 填充类型
 }
 
 /**
@@ -23,11 +24,12 @@ export interface PolygonPreviewProps {
 export function PolygonPreview({
   clipPath,
   points,
-  backgroundImage = '',
   width,
   height,
-  gradient = '',
+  fillColor = '#6366f1',
+  fillType = 'gradient',
 }: PolygonPreviewProps) {
+  const gradientId = useId();
   const hasRadius = points.some(p => (p.radius || 0) > 0);
   const roundedPath = hasRadius ? generateRoundedPath(points, width, height) : null;
 
@@ -51,68 +53,59 @@ export function PolygonPreview({
       })
       .join(' ');
 
-    // 生成渐变定义
-    let gradientColors = ['#6366f1', '#8b5cf6', '#d946ef'];
+    // 解析填充颜色或渐变
+    let fillValue = fillColor;
+    let gradientDef = null;
 
-    if (gradient) {
-      if (gradient.includes('linear-gradient')) {
-        // 处理完整的 linear-gradient 字符串
-        const match = gradient.match(/linear-gradient\([^,]*,\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/);
-        if (match && match.length >= 4) {
-          gradientColors = [match[1].trim(), match[2].trim(), match[3].trim()];
+    if (fillType === 'gradient') {
+      // 如果是渐变，解析颜色数组
+      try {
+        const colors = JSON.parse(fillColor);
+        if (Array.isArray(colors) && colors.length > 0) {
+          gradientDef = (
+            <defs>
+              <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                {colors.map((color: string, index: number) => (
+                  <stop
+                    key={index}
+                    offset={`${(index / (colors.length - 1)) * 100}%`}
+                    stopColor={color}
+                  />
+                ))}
+              </linearGradient>
+            </defs>
+          );
+          fillValue = `url(#${gradientId})`;
         }
-      } else if (gradient.includes(',')) {
-        // 处理纯色值列表
-        gradientColors = gradient.split(',').map(c => c.trim());
-        // 确保至少有三种颜色
-        while (gradientColors.length < 3) {
-          gradientColors.push(gradientColors[gradientColors.length - 1] || '#d946ef');
-        }
+      } catch {
+        // 如果不是有效的 JSON，使用默认渐变
+        const defaultColors = ['#6366f1', '#8b5cf6', '#d946ef'];
+        gradientDef = (
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={defaultColors[0]} />
+              <stop offset="50%" stopColor={defaultColors[1]} />
+              <stop offset="100%" stopColor={defaultColors[2]} />
+            </linearGradient>
+          </defs>
+        );
+        fillValue = `url(#${gradientId})`;
       }
     }
 
-    const gradientDef = (
-      <defs>
-        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={gradientColors[0]} />
-          <stop offset="50%" stopColor={gradientColors[1]} />
-          <stop offset="100%" stopColor={gradientColors[2]} />
-        </linearGradient>
-      </defs>
-    );
-
-    // 创建图片ID（如果有背景图片）
-    const imageId = backgroundImage
-      ? `polygon-image-${Math.random().toString(36).substring(2, 9)}`
-      : '';
-
     return (
-      <svg width={width} height={height} viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
+      <svg
+        width={width}
+        height={height}
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="h-full w-full"
+      >
         {gradientDef}
-        {backgroundImage && (
-          <pattern id={imageId} patternUnits="userSpaceOnUse" width={width} height={height}>
-            <image
-              href={backgroundImage}
-              width={width}
-              height={height}
-              preserveAspectRatio="xMidYMid slice"
-            />
-          </pattern>
-        )}
         {roundedPath ? (
-          <path
-            d={roundedPath.svgPath}
-            fill={backgroundImage ? `url(#${imageId})` : `url(#gradient)`}
-            stroke="#3b82f6"
-            strokeWidth="0.5"
-          />
+          <path d={roundedPath.svgPath} fill={fillValue} stroke="#3b82f6" strokeWidth="0.5" />
         ) : (
-          <polygon
-            points={svgPoints}
-            fill={backgroundImage ? `url(#${imageId})` : `url(#gradient)`}
-            stroke="#3b82f6"
-            strokeWidth="0.5"
-          />
+          <polygon points={svgPoints} fill={fillValue} stroke="#3b82f6" strokeWidth="0.5" />
         )}
       </svg>
     );

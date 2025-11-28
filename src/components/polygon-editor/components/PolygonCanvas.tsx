@@ -14,11 +14,13 @@ export interface PolygonCanvasProps {
   activePointIndex: number | null;
   isDragging: boolean;
   backgroundImage?: string;
+  previewSize?: { width: number; height: number };
   onPointDragStart: (index: number) => void;
   onPointDragEnd: () => void;
   onPointMove: (point: Point) => void;
   onPointAdd: (point: Point, insertIndex?: number) => void;
   onPointRemove: (index: number) => void;
+  onPointRadiusChange?: (pointIndex: number, radius: number) => void;
 }
 
 /**
@@ -30,11 +32,13 @@ export function PolygonCanvas({
   activePointIndex,
   isDragging,
   backgroundImage,
+  previewSize,
   onPointDragStart,
   onPointDragEnd,
   onPointMove,
   onPointAdd,
   onPointRemove,
+  onPointRadiusChange,
 }: PolygonCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const size = useSize(canvasRef);
@@ -49,12 +53,10 @@ export function PolygonCanvas({
       const rect = canvasRef.current.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 100;
       const y = ((e.clientY - rect.top) / rect.height) * 100;
-      
+
       // 检查是否点击在现有顶点附近，如果是则不添加新点
       const clickedNearPoint = points.some(point => {
-        const distance = Math.sqrt(
-          Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2)
-        );
+        const distance = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
         return distance < 5; // 5%的容差范围
       });
 
@@ -125,24 +127,39 @@ export function PolygonCanvas({
     [onPointRemove]
   );
 
+  // 计算编辑区域的尺寸，根据预览尺寸的宽高比
+  const getCanvasStyle = () => {
+    if (isFullscreen) {
+      return { width: '100%', height: '100%' };
+    }
+
+    if (previewSize) {
+      // 使用 CSS aspect-ratio 属性来保持宽高比
+      return {
+        width: '100%',
+        aspectRatio: `${previewSize.width} / ${previewSize.height}`,
+        maxHeight: '600px',
+      };
+    }
+
+    return { width: '100%', height: '600px', aspectRatio: '1 / 1' };
+  };
+
   return (
     <div className="w-full">
       <div
         ref={canvasRef}
-        className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900' : 'h-[400px] w-full'} group cursor-crosshair rounded-lg border-2 border-gray-300 bg-white/10 backdrop-blur-sm transition-all duration-300 hover:border-blue-400 dark:border-gray-700 dark:bg-black/10 dark:hover:border-blue-600 overflow-hidden`}
+        className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900' : 'w-full'} group cursor-crosshair rounded-lg border-2 border-gray-300 bg-white/10 transition-all duration-300 hover:border-blue-400 dark:border-gray-700 dark:bg-black/10 dark:hover:border-blue-600 overflow-hidden`}
         onClick={handleCanvasClick}
         style={{
           backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          imageRendering: 'high-quality',
+          ...getCanvasStyle(),
         }}
       >
-        {/* 背景图片遮罩层，提高可见性 */}
-        {backgroundImage && (
-          <div className="absolute inset-0 bg-black/10 dark:bg-black/20 pointer-events-none" />
-        )}
-
         {/* 全屏切换按钮 */}
         <button
           onClick={e => {
@@ -173,13 +190,16 @@ export function PolygonCanvas({
             isActive={activePointIndex === index}
             onDragStart={onPointDragStart}
             onContextMenu={handlePointContextMenu}
+            onRadiusChange={onPointRadiusChange}
           />
         ))}
       </div>
 
       <div className="mt-4 space-y-4">
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          <p>点击画布添加顶点 | 拖拽顶点移动 | 右键点击顶点删除 | 点击预设形状快速创建</p>
+          <p>
+            点击画布添加顶点 | 拖拽顶点移动 | 右键点击顶点删除 | 选中顶点后使用滑块或滚轮调整圆角
+          </p>
         </div>
       </div>
     </div>
