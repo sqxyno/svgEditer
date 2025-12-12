@@ -136,7 +136,11 @@ export function PolygonEditor() {
       {/* 顶部导航栏 */}
       <header className="h-12 bg-[#FFFFFF] border-b border-[#EAEDF2] flex items-center justify-between px-4 shrink-0">
         <div className="flex items-center gap-2">
-          <img src="/favicon.ico" alt="Logo" className="w-6 h-6" />
+          <img
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/favicon.ico`}
+            alt="Logo"
+            className="w-6 h-6"
+          />
           <span className="text-lg font-semibold text-gray-800">SVG编辑器</span>
           <span className="text-600 text-#E5E7EB">- {/*  */}前端处理复杂圆角多边形解决方案</span>
         </div>
