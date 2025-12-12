@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
       }
     : {}),
   basePath: basePath,
-  assetPrefix: isProduction ? `/${repoName}/` : '',
+  assetPrefix: isProduction ? `/${repoName}` : '',
   // 确保禁用 trailingSlash，避免 GitHub Pages 路由问题
   trailingSlash: false,
   // 添加环境变量配置
