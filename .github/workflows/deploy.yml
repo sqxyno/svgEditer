@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: herry to GitHub Pages
 
 on:
   push:
@@ -26,8 +26,9 @@ jobs:
         with:
           node-version: '20'
 
+      # ⚠️ 必须使用 configure-pages@v5，否则报 "Get Pages site failed"
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3
@@ -36,8 +37,7 @@ jobs:
 
       - name: Get pnpm store directory
         shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
       - name: Setup pnpm cache
         uses: actions/cache@v4
