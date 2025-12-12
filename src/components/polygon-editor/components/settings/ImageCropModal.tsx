@@ -518,20 +518,31 @@ export function ImageCropModal({
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex items-center justify-between">
           <button
-            onClick={onCancel}
+            onClick={() => {
+              // 使用原图，不裁剪
+              onCrop(imageUrl);
+            }}
             className="rounded-md border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
-            取消
+            使用原图
           </button>
-          <button
-            onClick={handleCrop}
-            className="flex items-center gap-2 rounded-md bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-          >
-            <Check className="h-5 w-5" />
-            确认裁剪
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onCancel}
+              className="rounded-md border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              取消
+            </button>
+            <button
+              onClick={handleCrop}
+              className="flex items-center gap-2 rounded-md bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+            >
+              <Check className="h-5 w-5" />
+              确认裁剪
+            </button>
+          </div>
         </div>
       </div>
     </div>,

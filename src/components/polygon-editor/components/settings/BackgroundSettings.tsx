@@ -4,11 +4,21 @@ import { Crop, ImageIcon, Image as ImageIconComponent, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ImageCropModal } from './ImageCropModal';
 
+export interface BackgroundImageConfig {
+  url: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface BackgroundSettingsProps {
   backgroundImage: string;
   onChange: (url: string) => void;
   previewSize?: { width: number; height: number };
   onPreviewSizeChange?: (width: number, height: number) => void;
+  backgroundConfig?: BackgroundImageConfig;
+  onBackgroundConfigChange?: (config: BackgroundImageConfig) => void;
 }
 
 export function BackgroundSettings({
@@ -16,6 +26,8 @@ export function BackgroundSettings({
   onChange,
   previewSize,
   onPreviewSizeChange,
+  backgroundConfig,
+  onBackgroundConfigChange,
 }: BackgroundSettingsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showCropModal, setShowCropModal] = useState(false);
@@ -71,9 +83,15 @@ export function BackgroundSettings({
   const handleCrop = (croppedImageUrl: string) => {
     onChange(croppedImageUrl);
     setShowCropModal(false);
-    // 清理临时图片URL（延迟清理，确保新图片已加载）
+    // 只有当临时URL与裁剪后的URL不同时才清理
+    // 避免释放正在使用的blob URL
     setTimeout(() => {
-      if (tempImageUrl && tempImageUrl.startsWith('blob:')) {
+      if (
+        tempImageUrl &&
+        tempImageUrl.startsWith('blob:') &&
+        tempImageUrl !== croppedImageUrl &&
+        tempImageUrl !== backgroundImage
+      ) {
         URL.revokeObjectURL(tempImageUrl);
       }
       setTempImageUrl('');
@@ -188,6 +206,30 @@ export function BackgroundSettings({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* 图片大小和位置设置 */}
+        {backgroundImage && backgroundConfig && (
+          <div className="mt-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">图片大小</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="20"
+                  max="100"
+                  value={backgroundConfig.width}
+                  onChange={e => {
+                    const size = Number(e.target.value);
+                    onBackgroundConfigChange?.({ ...backgroundConfig, width: size, height: size });
+                  }}
+                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <span className="text-sm text-gray-600 w-12">{backgroundConfig.width}%</span>
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">提示：可在画布中直接拖拽图片调整位置</div>
           </div>
         )}
       </div>

@@ -9,8 +9,7 @@ export interface SizeSettingsProps {
 export function SizeSettings({ width, height, onChange }: SizeSettingsProps) {
   return (
     <div>
-      <h4 className="mb-2 text-sm font-medium">预览尺寸</h4>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-xs">宽度 (px)</label>
           <input

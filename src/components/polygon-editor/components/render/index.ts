@@ -1,3 +1,4 @@
+export * from './GuideLine';
 export * from './PolygonEdge';
 export * from './PolygonPreview';
 export * from './PolygonRenderer';

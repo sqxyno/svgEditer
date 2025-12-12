@@ -1,76 +1,138 @@
 'use client';
 
 import { Point } from '@/hooks/usePolygon';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from 'lucide-react';
+import { useCallback } from 'react';
 
 export interface VertexSettingsProps {
   points: Point[];
   onUpdatePoint: (index: number, point: Point) => void;
   onResetPolygon: () => void;
+  selectedIndex?: number | null;
+  onSelectPoint?: (index: number | null) => void;
 }
 
-export function VertexSettings({ points, onUpdatePoint, onResetPolygon }: VertexSettingsProps) {
+export function VertexSettings({
+  points,
+  onUpdatePoint,
+  onResetPolygon,
+  selectedIndex,
+  onSelectPoint,
+}: VertexSettingsProps) {
+  const STEP = 0.5;
+  const FINE_STEP = 0.1;
+
+  const movePoint = useCallback(
+    (index: number, direction: 'up' | 'down' | 'left' | 'right', fine = false) => {
+      const point = points[index];
+      const step = fine ? FINE_STEP : STEP;
+      let newX = point.x;
+      let newY = point.y;
+
+      switch (direction) {
+        case 'up':
+          newY = Math.max(0, point.y - step);
+          break;
+        case 'down':
+          newY = Math.min(100, point.y + step);
+          break;
+        case 'left':
+          newX = Math.max(0, point.x - step);
+          break;
+        case 'right':
+          newX = Math.min(100, point.x + step);
+          break;
+      }
+
+      onUpdatePoint(index, { ...point, x: newX, y: newY });
+    },
+    [points, onUpdatePoint, STEP, FINE_STEP]
+  );
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-        {points.map((point, index) => (
-          <div
-            key={`point-${index}`}
-            className="rounded-md border border-gray-200 bg-white/10 p-2 shadow-sm dark:border-gray-700 dark:bg-black/10"
-          >
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-xs font-medium">顶点 {index + 1}</span>
-              <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                {index}
-              </span>
+    <div className="space-y-5">
+      {points.map((point, index) => (
+        <div
+          key={`point-${index}`}
+          onClick={() => onSelectPoint?.(selectedIndex === index ? null : index)}
+          className={`p-2 rounded-lg cursor-pointer transition-colors ${selectedIndex === index ? 'bg-blue-50 ring-2 ring-blue-500' : 'hover:bg-gray-50'}`}
+        >
+          <div className="text-sm font-medium text-gray-800 mb-2 flex items-center gap-2">
+            顶点 {index + 1}
+            {selectedIndex === index && <span className="text-xs text-blue-500">已选中</span>}
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-gray-500">X</label>
+                <input
+                  type="number"
+                  className="w-16 rounded border border-[#EAEDF2] px-2 py-1.5 text-sm"
+                  value={point.x.toFixed(1)}
+                  min={0}
+                  max={100}
+                  step={0.1}
+                  onChange={e => {
+                    const value = parseFloat(e.target.value);
+                    if (!isNaN(value)) onUpdatePoint(index, { ...point, x: value });
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-gray-500">Y</label>
+                <input
+                  type="number"
+                  className="w-16 rounded border border-[#EAEDF2] px-2 py-1.5 text-sm"
+                  value={point.y.toFixed(1)}
+                  min={0}
+                  max={100}
+                  step={0.1}
+                  onChange={e => {
+                    const value = parseFloat(e.target.value);
+                    if (!isNaN(value)) onUpdatePoint(index, { ...point, y: value });
+                  }}
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-1">
-              <div>
-                <label className="mb-1 block text-xs">X (%)</label>
-                <input
-                  type="number"
-                  className="w-full rounded border border-gray-300 bg-white/10 px-2 py-1 text-xs dark:border-gray-700 dark:bg-black/10"
-                  value={point.x}
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  onChange={e => {
-                    const value = parseFloat(e.target.value);
-                    if (!isNaN(value)) {
-                      onUpdatePoint(index, { ...point, x: value });
-                    }
-                  }}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs">Y (%)</label>
-                <input
-                  type="number"
-                  className="w-full rounded border border-gray-300 bg-white/10 px-2 py-1 text-xs dark:border-gray-700 dark:bg-black/10"
-                  value={point.y}
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  onChange={e => {
-                    const value = parseFloat(e.target.value);
-                    if (!isNaN(value)) {
-                      onUpdatePoint(index, { ...point, y: value });
-                    }
-                  }}
-                />
-              </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => movePoint(index, 'up')}
+                className="p-1.5 rounded hover:bg-[#EAEDF2] text-gray-600"
+                title="上移"
+              >
+                <ArrowUp size={16} />
+              </button>
+              <button
+                onClick={() => movePoint(index, 'down')}
+                className="p-1.5 rounded hover:bg-[#EAEDF2] text-gray-600"
+                title="下移"
+              >
+                <ArrowDown size={16} />
+              </button>
+              <button
+                onClick={() => movePoint(index, 'left')}
+                className="p-1.5 rounded hover:bg-[#EAEDF2] text-gray-600"
+                title="左移"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <button
+                onClick={() => movePoint(index, 'right')}
+                className="p-1.5 rounded hover:bg-[#EAEDF2] text-gray-600"
+                title="右移"
+              >
+                <ArrowRight size={16} />
+              </button>
             </div>
           </div>
-        ))}
-      </div>
-
-      <div className="flex justify-end">
-        <button
-          onClick={onResetPolygon}
-          className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-        >
-          重置多边形
-        </button>
-      </div>
+        </div>
+      ))}
+      <button
+        onClick={onResetPolygon}
+        className="w-full rounded bg-blue-500 px-3 py-2 text-sm text-white hover:bg-blue-600"
+      >
+        重置
+      </button>
     </div>
   );
 }

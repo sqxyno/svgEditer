@@ -89,7 +89,7 @@ export function PolygonVertex({
     <>
       <motion.div
         ref={vertexRef}
-        className={`absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 transform cursor-move rounded-full ${isActive ? 'bg-red-500 ring-2 ring-red-200 dark:ring-red-800' : 'bg-blue-500 hover:bg-blue-600'}`}
+        className={`absolute z-20 h-5 w-5 -translate-x-1/2 -translate-y-1/2 transform cursor-move rounded-full ${isActive ? 'bg-red-500 ring-2 ring-red-200 dark:ring-red-800' : 'bg-blue-500 hover:bg-blue-600'}`}
         style={{
           left: `${point.x}%`,
           top: `${point.y}%`,
@@ -117,7 +117,7 @@ export function PolygonVertex({
       {isActive && onRadiusChange && (
         <motion.div
           ref={controlRef}
-          className="absolute z-20 transform"
+          className="absolute z-30 transform"
           style={{
             left: point.x < 50 ? `${point.x}%` : 'auto',
             right: point.x >= 50 ? `${100 - point.x}%` : 'auto',
