@@ -1,4 +1,4 @@
-import { Github, Home, Info } from 'lucide-react';
+import { Home, Info } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
@@ -40,14 +40,6 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
                 <Info className="h-4 w-4" />
                 <span>帮助</span>
               </Link>
-              <Link
-                href="https://github.com/crper/next-css-polygon-editor"
-                target="_blank"
-                className="flex items-center gap-1 rounded-md bg-gray-800 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
-              >
-                <Github className="h-4 w-4" />
-                <span>GitHub</span>
-              </Link>
             </nav>
           </div>
         </header>
@@ -57,7 +49,10 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
         {/* 页脚 */}
         <footer className="border-t border-gray-200 py-6 dark:border-gray-800">
           <div className="container mx-auto px-4 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>© {new Date().getFullYear()} SVG编辑器 - 一款强大的SVG编辑工具</p>
+            <p>
+              人生若只如初见，珍惜眼前人，珍惜当下事，祝你幸福(´∀｀)♡ - by herry ©{' '}
+              {new Date().getFullYear()}{' '}
+            </p>
           </div>
         </footer>
       </body>
