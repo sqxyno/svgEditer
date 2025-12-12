@@ -156,7 +156,7 @@ export function PolygonCanvas({
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          imageRendering: 'high-quality',
+          imageRendering: 'auto',
           ...getCanvasStyle(),
         }}
       >
