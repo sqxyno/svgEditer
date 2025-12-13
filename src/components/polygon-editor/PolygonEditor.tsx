@@ -1,7 +1,7 @@
 'use client';
 
 import { usePolygon } from '@/hooks/usePolygon';
-import { CircleDot, Image, Palette, Radius, Ruler, Shapes } from 'lucide-react';
+import { CircleDot, FlipHorizontal, Image, Palette, Radius, Ruler, Shapes } from 'lucide-react';
 import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { CodeToolbar } from './components/CodeToolbar';
@@ -10,13 +10,14 @@ import { PolygonPreview } from './components/render/PolygonPreview';
 import {
   BackgroundSettings,
   BorderRadiusSettings,
+  MirrorSettings,
   PresetsSettings,
   PreviewColorSettings,
   SizeSettings,
   VertexSettings,
 } from './components/settings';
 
-type TabType = 'image' | 'size' | 'preset' | 'vertex' | 'radius' | 'color';
+type TabType = 'image' | 'size' | 'preset' | 'vertex' | 'radius' | 'mirror' | 'color';
 
 interface TabItem {
   id: TabType;
@@ -30,6 +31,7 @@ const tabs: TabItem[] = [
   { id: 'preset', icon: <Shapes size={20} />, label: '预设' },
   { id: 'vertex', icon: <CircleDot size={20} />, label: '顶点' },
   { id: 'radius', icon: <Radius size={20} />, label: '圆角' },
+  { id: 'mirror', icon: <FlipHorizontal size={20} />, label: '镜像' },
   { id: 'color', icon: <Palette size={20} />, label: '颜色' },
 ];
 
@@ -113,6 +115,8 @@ export function PolygonEditor() {
             onSelectPoint={setSelectedPointIndex}
           />
         );
+      case 'mirror':
+        return <MirrorSettings points={polygon.points} onUpdatePoints={polygon.setPoints} />;
       case 'color':
         return (
           <PreviewColorSettings

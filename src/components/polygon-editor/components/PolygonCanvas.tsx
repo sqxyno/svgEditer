@@ -186,7 +186,14 @@ export function PolygonCanvas({
       // 快捷键 A：切换添加顶点模式
       if (e.key === 'a' || e.key === 'A') {
         e.preventDefault();
-        setIsNormalMouseMode(prev => !prev);
+        setIsNormalMouseMode(prev => {
+          // 切换到普通鼠标模式时清除选中状态
+          if (!prev) {
+            setSelectedPointIndex(null);
+            onExternalSelectPoint?.(null);
+          }
+          return !prev;
+        });
         onImageEditModeChange?.(false);
         return;
       }
@@ -275,8 +282,8 @@ export function PolygonCanvas({
       }
       if (isDragging) {
         onPointDragEnd();
-        // 不清除 selectedPointIndex，保持顶点选中状态以便使用方向键
-        setIsNormalMouseMode(true); // 拖拽结束后切换到普通鼠标模式
+        // 保持顶点选中状态以便使用方向键和显示圆角控件
+        // 不切换到普通鼠标模式，保持当前模式
       }
     };
     if (isDragging || isDraggingBg) {
@@ -400,6 +407,7 @@ export function PolygonCanvas({
           onClick={e => {
             e.stopPropagation();
             setSelectedPointIndex(null);
+            onExternalSelectPoint?.(null);
             setIsNormalMouseMode(true);
             onImageEditModeChange?.(false);
           }}
@@ -650,8 +658,9 @@ export function PolygonCanvas({
             />
           ))}
 
+        {/* 使用 renderKey 作为 key 的一部分来强制重新渲染 */}
         <PolygonRenderer
-          key={`renderer-${renderKey}`}
+          key={`polygon-${renderKey}-${size?.width}-${size?.height}`}
           points={points}
           isActive={true}
           containerWidth={size?.width ?? 0}
